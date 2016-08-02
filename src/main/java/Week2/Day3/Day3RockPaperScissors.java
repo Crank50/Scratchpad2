@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class Day3RockPaperScissors {
 
     public static Scanner scanner = new Scanner(System.in);
-    ArrayList<String> names = new ArrayList<>();
+    ArrayList<String> names = new ArrayList<String>();
     private String player1Choice = "";
     private String player2Choice = "";
 
