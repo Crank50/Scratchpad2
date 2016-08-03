@@ -4,9 +4,9 @@ package Week4.day2;
  * Created by Justin on 8/2/16.
  */
 public class QueryGettersSetters {
-    private String first_name;
-    private String last_name;
-    private int dayofweek;
+    public String first_name;
+    public String last_name;
+    public int dayofweek;
 
     public String getFirst_name() {
         return first_name;

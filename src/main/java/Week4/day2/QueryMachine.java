@@ -1,189 +1,153 @@
 package Week4.day2;
 
+
+
 import java.sql.*;
 import java.util.Scanner;
+
+
 
 /**
  * Created by Justin on 8/2/16.
  */
 public class QueryMachine {
-    PreparedQueryMachine preparedQueryMachine = new PreparedQueryMachine();
-    Connection conn;               //our connnection to the db - presist for life of program
-    QueryGettersSetters queryGettersSetters = new QueryGettersSetters();
+ private String first_name;
+ private String last_name;
+ private String addnote;
 
 
-    // we dont want this garbage collected until we are done
-    public QueryMachine(String db_file_name_prefix) throws Exception {    // note more general exception
+    static final String JDBC_DRIVER = "org.hsqldb.jdbcDriver";
+    static final String DB_URL = "jdbc:hsqldb:registry_file";
+    static final String USER = "Ferdinand";
+    static final String PASS = "";
 
-        // Load the HSQL Database Engine JDBC driver
-        // hsqldb.jar should be in the class path or made part of the current jar
-        Class.forName("org.hsqldb.jdbcDriver");
 
-        // connect to the database.   This will load the db files and start the
-        // database if it is not alread running.
-        // db_file_name_prefix is used to open or create files that hold the state
-        // of the db.
-        // It can contain directory names relative to the
-        // current working directory
-        conn = DriverManager.getConnection("jdbc:hsqldb:"
-                        + db_file_name_prefix,    // filenames
-                "sa",                     // username
-                "");                      // password
-    }
+
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-
-        QueryMachine dbase = null;
-
-        try {
-            dbase = new QueryMachine("dbase_file");
-        } catch (Exception ex1) {
-            ex1.printStackTrace();    // could not start db
-
-            return;                   // bye bye
-        }
-
-        try {
-            dbase.update("Drop Table Loyalty_Program");
-        } catch (Exception e) {}
-
-
-        try {
-
-            //make an empty table
-            //
-            // by declaring the id column IDENTITY, the db will automatically
-            // generate unique values for new rows- useful for row keys
-            dbase.update("Create TABLE Loyalty_Program (id INTEGER IDENTITY, first_name VARCHAR(256), last_name VARCHAR(256), dayofweek Integer)");
-        } catch (SQLException ex2) {
-
-
-            //ignore
-            //ex2.printStackTrace();  // second time we run program
-            //  should throw execption since table
-            // already there
-            //
-            // this will have no effect on the db
-        }
-
-        try {
-
-            // add some rows - will create duplicates if run more then once
-            // the id column is automatically generated
-            dbase.update(
-                    "INSERT INTO Loyalty_Program(first_name,last_name,dayofweek) VALUES('Genison', 'Marx', 1)");
-            dbase.update(
-                    "INSERT INTO Loyalty_Program(first_name,last_name,dayofweek) VALUES('Farcy', 'Lexicon', 2)");
-
-
-            // do a query
-            dbase.query("SELECT * FROM Loyalty_Program WHERE id < 250");
-
-            // at end of program
-            dbase.shutdown();
-        } catch (SQLException ex3) {
-            ex3.printStackTrace();
-        }
-
-        try {
-            dbase.insert("Insert Into Loyalty_Program(first_name,last_name,dayofweek)");
-        }catch (SQLException ee) {
-            ee.printStackTrace();
-        }
-    }
-
-    public void shutdown() throws SQLException {
-
-        Statement st = conn.createStatement();
-
-        // db writes out to files and performs clean shuts down
-        // otherwise there will be an unclean shutdown
-        // when program ends
-        st.execute("SHUTDOWN");
-        conn.close();    // if there are no other open connection
-    }
-
-    //use for SQL command SELECT
-    public synchronized void query(String expression) throws SQLException {
-        System.out.println("");
-        Statement st = null;
-        ResultSet rs = null;
-
-        st = conn.createStatement();         // statement objects can be reused with
-
-        // repeated calls to execute but we
-        // choose to make a new one each time
-        rs = st.executeQuery(expression);    // run the query
-
-        // do something with the result set.
-        dump(rs);
-        st.close();    // NOTE!! if you close a statement the associated ResultSet is
-
-        // closed too
-        // so you should copy the contents to some other object.
-        // the result set is invalidated also  if you recycle an Statement
-        // and try to execute some other query before the result set has been
-        // completely examined.
-    }
-
-    //use for SQL commands CREATE, DROP, INSERT and UPDATE
-    public synchronized void update(String expression) throws SQLException {
-
-        Statement st = null;
-
-        st = conn.createStatement();    // statements
-
-        int i = st.executeUpdate(expression);    // run the query
-
-        if (i == -1) {
-            System.out.println("db error. : " + expression);
-        }
-
-        st.close();
-    }
-
-    public synchronized void insert(String expression) throws SQLException{
+        PreparedStatement pstmt = null;
+        Connection con = null;
         Statement stmt = null;
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Add new info:[yes]/[no]");
-        String userinput = scanner.nextLine();
-        if (userinput.equalsIgnoreCase("yes")) {
-            System.out.println("What is your first name?: ");
-            queryGettersSetters.setFirst_name(scanner.nextLine());
-            System.out.println("What is your last name?: ");
-            queryGettersSetters.setLast_name(scanner.nextLine());
-            System.out.println("What is the # day of month?: ");
-            queryGettersSetters.setDayofweek(scanner.nextInt());
-        }
-        stmt = conn.createStatement();
-        stmt.executeUpdate("UPDATE Loyalty_Program SET first_name = ?, last_name = ?, dayofweek = ? WHERE id > 1");
-    }
 
-    public static void dump(ResultSet rs) throws SQLException {
 
-        // the order of the rows in a cursor
-        // are implementation dependent unless you use the SQL ORDER statement
-        ResultSetMetaData meta = rs.getMetaData();
-        int colmax = meta.getColumnCount();
-        int i;
-        Object o = null;
+        try {
+            //Step 1: Register JDBC driver
+            Class.forName(JDBC_DRIVER);
 
-        // the result set is a cursor into the data.  You can only
-        // point to one row at a time
-        // assume we are pointing to BEFORE the first row
-        // rs.next() points to next row and returns true
-        // or false if there is no next row, which breaks the loop
-        for (; rs.next(); ) {
-            for (i = 0; i < colmax; ++i) {
-                o = rs.getObject(i + 1);    // Is SQL the first column is indexed
+            //Step 2: Open a connection
+            System.out.println("Connecting to a database....");
+            con = DriverManager.getConnection(DB_URL, USER, PASS);
 
-                // with 1 not 0
-                System.out.print(o.toString() + " ..");
+            //Step 3: Execute a query
+
+            pstmt = con.prepareStatement("Insert Into guest_registry (first_name,last_name,addnote) VALUES (?,?,?)");
+
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Welcome to the Registry: [ADD]/[View]");
+            String guests = scanner.nextLine();
+            QueryMachine qm = new QueryMachine();
+
+            if (guests.equalsIgnoreCase("add")) {
+                System.out.println("First name:");
+                qm.setFirst_name(scanner.nextLine());
+                System.out.println("Last name:");
+                qm.setLast_name(scanner.nextLine());
+                System.out.println("Add note:");
+                qm.setAddnote(scanner.nextLine());
+
+                pstmt.setString(1, qm.getFirst_name());
+                pstmt.setString(2, qm.getLast_name());
+                pstmt.setString(3, qm.getAddnote());
+                pstmt.executeUpdate();
+
+            }
+            if (guests.equalsIgnoreCase("view")) {
+                try {
+                    Class.forName(JDBC_DRIVER);
+
+                    //STEP 2: Open a connection
+                    System.out.println("Connecting to database...");
+                    con = DriverManager.getConnection(DB_URL, USER, PASS);
+
+                    //STEP 3: Execute a query
+                    stmt = con.createStatement();
+                    ResultSet rs = stmt.executeQuery("SELECT id, first_name, last_name, addnote FROM guest_registry");
+
+                    //STEP 4: Extract data from result set
+                    while (rs.next()) {
+                        //Retrieve by column name
+                        int id = rs.getInt("id");
+                        String first_name = rs.getString("first_name");
+                        String last_name = rs.getString("last_name");
+                        String addnote = rs.getString("addnote");
+
+                        //Display values
+                        String resultString = "ID: " + id;
+                        resultString += ", FIRST_NAME: " + first_name;
+                        resultString += ", LAST_NAME: " + last_name;
+                        resultString += ", ADDNOTE: " + addnote;
+                        System.out.println(resultString);
+                    }
+                } catch (SQLException se1) {
+                    se1.printStackTrace();
+                }
             }
 
-            System.out.println(" ");
-        }
+
+                    //step 4: Clean-up environment
+                    stmt.close();
+                    con.close();
+                } catch (SQLException se) {
+                    se.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (stmt != null)
+                            stmt.close();
+                    } catch (SQLException se2) {
+                    }
+                    try {
+                        if (con != null)
+                            con.close();
+                    } catch (SQLException se) {
+                        se.printStackTrace();
+                    }
+                }
+
+
+
+                System.out.println("Please Come Again");
+
+
+            }
+
+
+
+
+
+
+    public String getFirst_name() {
+        return first_name;
     }
 
+    public void setFirst_name(String first_name) {
+        this.first_name = first_name;
+    }
+
+    public String getLast_name() {
+        return last_name;
+    }
+
+    public void setLast_name(String last_name) {
+        this.last_name = last_name;
+    }
+
+    public String getAddnote() {
+        return addnote;
+    }
+
+    public void setAddnote(String addnote) {
+        this.addnote = addnote;
+    }
 }
