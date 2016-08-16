@@ -32,7 +32,7 @@ public class QueryMachineTable {
         try {
 
             registry.update(
-                    "CREATE TABLE guest_registry ( id INTEGER IDENTITY, first_name VARCHAR(25), last_name VARCHAR(12), addnote VARCHAR(250))");
+                    "CREATE TABLE guest_registry ( id INTEGER IDENTITY, first_name VARCHAR(25), currentdate VARCHAR(12), addnote VARCHAR(250))");
         } catch (SQLException ex2) {
 
         }
@@ -40,9 +40,9 @@ public class QueryMachineTable {
         try {
 
             registry.update(
-                    "INSERT INTO guest_registry(first_name,last_name,addnote) VALUES('Bing', '03032016', 'Great Fun!')");
+                    "INSERT INTO guest_registry(first_name,date1,addnote) VALUES('Bing', '03032016', 'Great Fun!')");
             registry.update(
-                    "INSERT INTO guest_registry(first_name,last_name,addnote) VALUES('Google', '03042016', 'What was that?')");
+                    "INSERT INTO guest_registry(first_name,date1,addnote) VALUES('Google', '03042016', 'What was that?')");
 
             // do a query
             registry.query("SELECT * FROM guest_registry WHERE id < 100");

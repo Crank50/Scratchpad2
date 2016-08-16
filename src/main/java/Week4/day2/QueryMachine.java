@@ -40,7 +40,7 @@ public class QueryMachine {
 
             //Step 3: Execute a query
 
-            pstmt = con.prepareStatement("Insert Into guest_registry (first_name,last_name,addnote) VALUES (?,?,?)");
+            pstmt = con.prepareStatement("Insert Into guest_registry (first_name,date1,addnote) VALUES (?,?,?)");
 
             Scanner scanner = new Scanner(System.in);
             System.out.println("Welcome to the Registry: [ADD]/[View]");
@@ -50,7 +50,7 @@ public class QueryMachine {
             if (guests.equalsIgnoreCase("add")) {
                 System.out.println("First name:");
                 qm.setFirst_name(scanner.nextLine());
-                System.out.println("Last name:");
+                System.out.println("Date:");
                 qm.setLast_name(scanner.nextLine());
                 System.out.println("Add note:");
                 qm.setAddnote(scanner.nextLine());
