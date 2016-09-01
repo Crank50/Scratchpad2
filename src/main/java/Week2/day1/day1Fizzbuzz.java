@@ -6,12 +6,12 @@ package Week2.day1;
 public class day1Fizzbuzz {
 
     public static void main(String[] args) {
-        thisWay();
-        thatway();
+        buzzfizz();
+        fizzbuzz();
     }
 
 
-    public static void thisWay() {
+    public static void buzzfizz() {
         // count from 1 to 100 (loop?)
         for (int i = 1; i <= 100; i++) {
             String returnThis = "";
@@ -35,7 +35,7 @@ public class day1Fizzbuzz {
 
     }
 
-    public static void thatway() {
+    public static void fizzbuzz() {
         // count from 1 to 100 (loop?)
         for (int i = 1; i <= 100; i++) {
             if (i % 15 == 0) {
